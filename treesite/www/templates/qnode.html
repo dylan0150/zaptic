@@ -1,11 +1,10 @@
 <div>
     <span>{{ question.text }}</span>
+    <span>{{ results | arrayToList : 'text' }}</span>
 
     <div ng-repeat="answer in question.choices" >
         <button ng-click="selectNode(answer)">{{ answer.text }}</button>
-
-        <qnode ng-if="answer.selected && node" question="node"></qnode>
+        <qnode ng-if="answer.selected && node" question="node.question" results="node.results"></qnode>
         <span ng-if="answer.selected && !node">EOP</span>
     </div>
-    
 </div>

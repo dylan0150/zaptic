@@ -1,13 +1,8 @@
 angular.module('app',[])
 
 .controller('ctrl', function($scope, questions) {
-
     $scope.question = questions.get()["1"]
-    $scope.results  = questions.getResults()
-
-    $scope.$on("directive.qnode.change", function(event) {
-        $scope.results = questions.getResults()
-    })
+    $scope.results  = []
 })
 
 .service('questions', function() {
@@ -32,15 +27,18 @@ angular.module('app',[])
         for ( var answer of question.choices ) {
             if ( answer.label == answer_label ) { break };
         }
-
+        var results = []
         for ( var id of answer.add ) {
-            if ( !this.results.includes(id) ) { this.results.push(id) }
+            if ( !results.includes(id) ) { results.push(id) }
         }
         for ( var id of answer.remove ) {
-            this.results = this.results.filter(function(e){ return e != id })
+            var filtered_results = results.filter(function(e){ return e != id })
         }
 
-        return question[answer.next]
+        return {
+            question: this.questions[answer.next],
+            results : filtered_results
+        }
     }
 
     return this
@@ -51,16 +49,32 @@ angular.module('app',[])
         restrict: 'E',
         templateUrl: "/templates/qnode.html",
         scope: {
-            question: "="
+            question: "=",
+            results: "="
         },
         controller: function($scope, questions) {
-            
             $scope.selectNode = function(answer) {
                 answer.selected = true
-                $scope.node = questions.getNextNode($scope.question, answer.label)
-                $scope.$emit("directive.qnode.change", answer)
+                $scope.node     = questions.getNextNode($scope.question, answer.label)
             }
-
         }
+    }
+})
+
+.filter('arrayToList', function() {
+
+    return function(value, key) {
+        var res = ""
+        for ( var item of value ) {
+
+            if ( res.length > 0 ) { res += ", " }
+            
+            if ( key == undefined ) {
+                res += item.toString()
+            } else {
+                res += item[key].toString()
+            }
+        }
+        return res
     }
 })
